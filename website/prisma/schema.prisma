@@ -11,40 +11,41 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String
-  clerk_id  String   @unique
-  name      String
-  type      String
-  iscompany  Boolean
-  ishr      Boolean
-  phone     String
-  companyCode String?  // Add the companyCode field as optional
-  createdAt DateTime @default(now())
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  email        String
+  clerk_id     String        @unique
+  name         String
+  type         String
+  iscompany    Boolean
+  ishr         Boolean
+  phone        String
+  companyCode  String?
+  createdAt    DateTime      @default(now())
 
-  applications Application[] 
+  applications Application[]
+  jobPosts     JobPost[]     @relation("UserJobPosts")
 }
 
-model Job {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  job_type    String
-  location    String
-  company     String
-  salary      Float
-  opening_no  Int
-  status      String
-  deadline    DateTime
-  createdAt   DateTime @default(now())
+model JobPost {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String
+  jobType       String
+  location      String
+  noOfOpenings  Int
+  status        String        @default("open")
+  deadline      DateTime
+  createdAt     DateTime      @default(now())
+  createdById   String        @db.ObjectId
 
-  applications Application[] 
+  createdBy     User          @relation("UserJobPosts", fields: [createdById], references: [id])
+  applications  Application[]
 }
 
 model Application {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  user_id         String   @db.ObjectId
-  job_id          String   @db.ObjectId
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  user_id         String     @db.ObjectId
+  job_id          String     @db.ObjectId
   firstName       String
   lastName        String
   email           String
@@ -56,8 +57,9 @@ model Application {
   offerletter     Boolean
   immediateJoiner Boolean
   resume_details  String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime   @default(now())
 
-  user User @relation(fields: [user_id], references: [id])
-  job  Job  @relation(fields: [job_id], references: [id])
+  user            User       @relation(fields: [user_id], references: [id])
+  job             JobPost    @relation(fields: [job_id], references: [id])
 }
+
