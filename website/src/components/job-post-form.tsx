@@ -8,7 +8,7 @@ export default function JobPostForm({ onSubmit }: JobPostFormProps) {
   const { register, handleSubmit, formState: { isSubmitting }, } = useForm();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-blue-500 text-black">
       <div>
         <label className="block text-sm font-medium text-gray-700">Job Title</label>
         <input
