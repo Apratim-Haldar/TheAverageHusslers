@@ -164,7 +164,7 @@ def watch_applications_change_stream():
                 full_doc = change.get("fullDocument")
                 if full_doc:
                     # Process only if resume_details is not already present.
-                    if not full_doc.get("resume_details"):
+                    if full_doc.get("resume_details")=="":
                         process_new_application(full_doc)
                     else:
                         print(f"Application ID {full_doc.get('_id')} already contains resume_details. Skipping.")

@@ -1,25 +1,34 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-// import { Link } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Users, Briefcase, UserCheck, Bot, Plus, Search, Building2, MessageSquare, Upload } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import JobCreateForm from '@/components/JobCreateForm';
-
+import { useParams } from 'next/navigation';  // Import useParams
+import JobList from '@/components/JobList';
+import JobPdfForm from '@/components/JobPdfForm';
 const COLORS = ['#60A5FA', '#C084FC', '#F472B6', '#34D399'];
 
 const HR: React.FC = () => {
+    const { user_id } = useParams();  // Get the userId from the route params
     const [showAI, setShowAI] = useState(false);
     const [showCreateJobPost, setShowCreateJobPost] = useState(false);
+    const [showPDFUploadModal, setShowPDFUploadModal] = useState(false);
+
+    console.log('User ID:', user_id);  // Log the userId for debugging
+    
+    const [jobPosts, setJobPosts] = useState(0);
 
     const showForm = () => {
         setShowCreateJobPost(true);
-    }
+    };
 
+    const handleJobPdfUploadFormClose = () => {
+        setShowPDFUploadModal(false);
+    }
     const handleCloseJobPostModal = () => {
         setShowCreateJobPost(false);
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#0F172A] to-[#1E293B] text-white">
@@ -102,14 +111,19 @@ const HR: React.FC = () => {
                         Create Job Post
                     </button>
                     <button
+                        onClick={()=>setShowPDFUploadModal(true)}
                         className="flex items-center px-6 py-3 bg-[#1E293B] border border-gray-700 text-white rounded-xl hover:border-[#60A5FA]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#1E293B]"
                     >
                         <Upload className="w-5 h-5 mr-2" />
                         Upload Job Description
                     </button>
                 </div>
+                {showPDFUploadModal && (
+                    <JobPdfForm handleClose={handleJobPdfUploadFormClose} userId = {user_id}/>
+                )}
+                <JobList userId={user_id}/>
                 {showCreateJobPost && (
-                    <JobCreateForm onClose={handleCloseJobPostModal} />
+                    <JobCreateForm userId={user_id} onClose={handleCloseJobPostModal} /> // Pass userId here
                 )}
             </main>
         </div>

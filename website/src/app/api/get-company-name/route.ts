@@ -5,14 +5,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      title,
-      description,
-      noOfOpenings,
-      deadline,
-      location,
-      jobType,
       createdBy,
-      userId,
     } = body;
 
     if (!createdBy) {
@@ -42,24 +35,11 @@ export async function POST(req: NextRequest) {
     if (!companyUser) {
       return NextResponse.json({ error: 'Company not found for given companyCode' }, { status: 404 });
     }
+    
+    console.log('Company User:', companyUser); // Log the company user for debugging
 
-    // Step 3: Create Job Post
-    const newJobPost = await db.jobPost.create({
-      data: {
-        title,
-        description,
-        noOfOpenings: parseInt(noOfOpenings),
-        deadline: new Date(deadline),
-        location,
-        jobType,
-        status: 'open',
-        createdBy,
-        userId,
-        company: companyUser.name, // Add company name from company user
-      },
-    });
 
-    return NextResponse.json(newJobPost, { status: 201 });
+    return NextResponse.json(companyUser.name, { status: 201 });
   } catch (error: any) {
     console.error('Error creating job post:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

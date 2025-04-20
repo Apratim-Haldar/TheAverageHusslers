@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createUser } from './actions'
+import Link from 'next/link';
 
 export default function Form({ email, clerk_id }: { email: string; clerk_id: string }) {
   const [form, setForm] = useState({
@@ -35,7 +36,7 @@ export default function Form({ email, clerk_id }: { email: string; clerk_id: str
   const showIsCompanyToggle = form.type === 'Company'
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-white px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-white px-4">
       <form
         action={async (formData) => {
           formData.append('email', email)
@@ -171,6 +172,16 @@ export default function Form({ email, clerk_id }: { email: string; clerk_id: str
           Register
         </button>
       </form>
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-500 hover:underline">
+            Login here
+          </Link>
+        </p>  
+       </div> 
+
     </div>
+    
   )
 }

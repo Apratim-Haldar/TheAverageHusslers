@@ -5,22 +5,26 @@ import Modal from '@/components/modal';
 import JobPostForm from '@/components/job-post-form';
 
 type JobCreateFormProps = {
-    onClose: () => void;
+    onClose: () => void,
+    userId: any;  // userId is passed as a prop
 }
 
-const JobCreateForm = ({ onClose }: JobCreateFormProps) => {
+const JobCreateForm = ({ onClose, userId }: JobCreateFormProps) => {
     const [successMessage, setSuccessMessage] = useState("");
 
     const handleCreateJobPost = async (formData: any) => {
+        // Include userId in formData
+        const dataWithUserId = { ...formData, createdBy: userId, userId: userId };
+
         try {
             const response = await fetch(
-                "/api/create-job-post", // ✅ updated to App Router backend route
+                "/api/create-job-post", // updated to App Router backend route
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(formData), // assuming formData includes createdById
+                    body: JSON.stringify(dataWithUserId), // Send the updated form data with userId
                 }
             );
 
@@ -28,7 +32,7 @@ const JobCreateForm = ({ onClose }: JobCreateFormProps) => {
 
             setSuccessMessage("Job post created successfully!");
             setTimeout(() => {
-                onClose(); // Call the onClose prop to close the modal
+                onClose(); // Close the modal after success
                 setSuccessMessage("");
             }, 1000);
         } catch (error) {
