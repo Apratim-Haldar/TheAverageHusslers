@@ -1,4 +1,4 @@
-from app.data_loader import load_candidates, load_job_posts
+from app.data_loader import load_candidates, load_job_posts, load_users
 from langchain_pinecone import PineconeVectorStore
 from langchain.schema import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -13,13 +13,14 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 def format_documents():
     candidates = load_candidates()
     jobposts = load_job_posts()
+    users = load_users()
 
     # Create jobpost lookup by ID for easy reference
     jobpost_map = {str(j["_id"]): j for j in jobposts}
     docs = []
 
     for c in candidates:
-        job_id = str(c["jobPost"])
+        job_id = str(c["job_id"])  # Updated field name to match schema
         job_info = jobpost_map.get(job_id)
         job_title = job_info["title"] if job_info else "Unknown Role"
         job_location = job_info["location"] if job_info else "Unknown Location"
@@ -28,7 +29,9 @@ def format_documents():
             f"Candidate: {c['firstName']} {c['lastName']} applied for the role of {job_title} in {job_location}. "
             f"Email: {c['email']}, Status: {c['status']}, Experience: {c.get('experience', 'NA')} years. "
             f"Resume Summary: {c.get('resume_details', 'N/A')}. "
-            f"AI Evaluation: {c.get('aiEvaluation', {})}"
+            f"Immediate Joiner: {'Yes' if c.get('immediateJoiner', False) else 'No'}. "
+            f"Offer Letter: {'Sent' if c.get('offerletter', False) else 'Not Sent'}. "
+            f"Interview Date: {c.get('interview_date', 'Not Scheduled')}"
         )
 
         docs.append(Document(
@@ -40,11 +43,26 @@ def format_documents():
         text = (
             f"JobPost: {j['title']} at {j['location']} ({j['jobType']}). "
             f"Openings: {j['noOfOpenings']}, Deadline: {j['deadline']}. "
+            f"Status: {j['status']}. "
             f"Description: {j.get('description', 'N/A')}"
         )
         docs.append(Document(
             page_content=text,
             metadata={"type": "jobpost", "id": str(j["_id"]), "description": j.get('description', '')}
+        ))
+
+    # Add user information
+    for u in users:
+        text = (
+            f"User: {u['name']} ({u['email']}). "
+            f"Type: {u['type']}. "
+            f"Role: {'HR' if u.get('ishr', False) else 'Regular'}. "
+            f"Company: {'Yes' if u.get('iscompany', False) else 'No'}. "
+            f"Company Code: {u.get('companyCode', 'N/A')}"
+        )
+        docs.append(Document(
+            page_content=text,
+            metadata={"type": "user", "id": str(u["_id"])}
         ))
 
     return docs

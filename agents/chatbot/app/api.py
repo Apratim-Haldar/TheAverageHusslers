@@ -25,8 +25,8 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 # Configure MongoDB
 client = MongoClient("mongodb+srv://enbodyAdmin:O0r1MK2YLQ7QPkec@atlascluster.mz70pny.mongodb.net/GENAI")
-db = client['GENAI']
-collection = db['jobposts']
+db = client['RecruitOps']
+collection = db['JobPost']
 
 
 def extract_job_data_with_gemini(text):
@@ -42,16 +42,12 @@ Extract structured job data from the following text. Return it in JSON format wi
 Include any additional relevant fields too. Skip fields that are missing. Do not include explanations.
 
 Text:
-\"\"\"
-{text}
-\"\"\"
+\"\"\"{text}\"\"\"
 JSON:
 """
     response = model.generate_content(prompt)
     try:
-        # The output will be a JSON-like string
         content = response.text.strip()
-        # Clean up the content to ensure it's valid JSON
         if content.startswith('```json'):
             content = content.split('```json')[1].split('```')[0].strip()
         elif content.startswith('```'):
@@ -63,15 +59,19 @@ JSON:
         if 'noOfOpenings' not in data or not data['noOfOpenings']:
             data['noOfOpenings'] = 1
         else:
-            # Ensure noOfOpenings is an integer
             try:
                 data['noOfOpenings'] = int(data['noOfOpenings'])
             except:
                 data['noOfOpenings'] = 1
                 
         if 'deadline' not in data or not data['deadline']:
-            # Set default deadline to 30 days from now
-            data['deadline'] = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+            data['deadline'] = datetime.now() + timedelta(days=30)
+        else:
+            try:
+                # Parse deadline into a datetime object
+                data['deadline'] = datetime.strptime(data['deadline'], '%Y-%m-%d')
+            except ValueError:
+                data['deadline'] = datetime.now() + timedelta(days=30)
             
         if 'status' not in data:
             data['status'] = 'open'
@@ -83,7 +83,7 @@ JSON:
 
 
 @router.post("/upload")
-async def upload_pdf(file: UploadFile = File(...), user_id: str = None):
+async def upload_pdf(file: UploadFile = File(...),  user_id: str = None,companyName:str=None,):
     if not file:
         raise HTTPException(status_code=400, detail="No file uploaded")
     
@@ -93,13 +93,11 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = None):
     try:
         contents = await file.read()
         
-        # Save the file temporarily to handle potential PDF issues
         temp_file_path = "temp_pdf.pdf"
         with open(temp_file_path, "wb") as f:
             f.write(contents)
         
         try:
-            # Try to open with pdfplumber with error handling
             with pdfplumber.open(temp_file_path) as pdf:
                 pages_text = []
                 for page in pdf.pages:
@@ -119,7 +117,6 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = None):
             print(f"Error opening PDF with pdfplumber: {pdf_error}")
             raise HTTPException(status_code=400, detail="Invalid PDF format or corrupted file")
         finally:
-            # Clean up the temporary file
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
         
@@ -128,21 +125,19 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = None):
         if not extracted_data.get("title") or not extracted_data.get("description"):
             raise HTTPException(status_code=400, detail="Essential fields missing from PDF")
         
-        # Format the data to match JobPosts schema
         job_post_data = {
             "title": extracted_data.get("title"),
             "description": extracted_data.get("description"),
             "jobType": extracted_data.get("jobType", "full-time"),
             "location": extracted_data.get("location", "Remote"),
             "noOfOpenings": extracted_data.get("noOfOpenings", 1),
-            "deadline": extracted_data.get("deadline"),
+            "deadline": extracted_data.get("deadline"),  # Now a datetime object
             "status": "open",
             "createdAt": datetime.now(),
-            # Use the user_id from the request
+            "company": companyName,
             "createdBy": ObjectId(user_id)
         }
         
-        # Insert into MongoDB
         result = collection.insert_one(job_post_data)
         
         return {
@@ -154,7 +149,7 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = None):
                 "jobType": job_post_data["jobType"],
                 "location": job_post_data["location"],
                 "noOfOpenings": job_post_data["noOfOpenings"],
-                "deadline": job_post_data["deadline"]
+                "deadline": job_post_data["deadline"].strftime('%Y-%m-%d')  # Format for response
             }
         }
     

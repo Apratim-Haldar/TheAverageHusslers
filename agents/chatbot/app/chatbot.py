@@ -34,8 +34,11 @@ DO NOT mention internal MongoDB IDs. Focus on real job titles, descriptions, or 
 ### JOB POST CONTEXT:
 {job_context if job_context else "No relevant job post data."}
 
-### CANDIDATE CONTEXT:
-{candidate_context if candidate_context else "No relevant candidate data."}
+### APPLICATIONS CONTEXT:
+{candidate_context if candidate_context else "No relevant application data."}
+
+### USERS CONTEXT:
+
 
 ### CHAT HISTORY:
 {history}
