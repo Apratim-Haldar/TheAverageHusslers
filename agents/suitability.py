@@ -218,8 +218,40 @@ def process_application_for_ai_evaluation(application_doc: dict):
     else:
         print(f"Failed to update Application {app_id} with AI evaluation.")
 
+def initial_process_pending_evaluations():
+    """
+    One-time pass to evaluate any applications that already have resume_details
+    but lack aiEvaluation.
+    """
+    pending = applications.find({
+        "resume_details": {"$exists": True, "$ne": None},
+        "$or": [{"aiEvaluation": {"$exists": False}}, {"aiEvaluation": None}]
+    })
+    count = 0
+    for app in pending:
+        process_application_for_ai_evaluation(app)
+        count += 1
+    print(f"Initial pass complete: processed {count} existing evaluations.")
+
+def watch_resume_details_updates():
+    """
+    Listen for updates where resume_details was added, then trigger AI evaluation.
+    """
+    pipeline = [{
+        "$match": {
+            "operationType": "update",
+            "updateDescription.updatedFields.resume_details": {"$exists": True}
+        }
+    }]
+    with applications.watch(pipeline, full_document="updateLookup") as stream:
+        print("Listening for applications with newly added resume_details…")
+        for change in stream:
+            doc = change["fullDocument"]
+            if not doc.get("aiEvaluation"):
+                process_application_for_ai_evaluation(doc)
+
 if __name__ == "__main__":
-    print("Starting the Comprehensive AI Evaluation Background Worker (Polling mode)...")
+    print("Starting the AI Evaluation Background Worker using MongoDB Change Streams...")
     while True:
         try:
             pending_apps = list(applications_collection.find({
