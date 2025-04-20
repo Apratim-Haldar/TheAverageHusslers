@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';  // Import useParams
 import JobList from '@/components/JobList';
 import JobPdfForm from '@/components/JobPdfForm';
 const COLORS = ['#60A5FA', '#C084FC', '#F472B6', '#34D399'];
+import AIAssistant from '@/components/AIAssistant';
 
 const HR: React.FC = () => {
     const { user_id } = useParams();  // Get the userId from the route params
@@ -16,7 +17,7 @@ const HR: React.FC = () => {
     const [showPDFUploadModal, setShowPDFUploadModal] = useState(false);
 
     console.log('User ID:', user_id);  // Log the userId for debugging
-    
+
     const [jobPosts, setJobPosts] = useState(0);
 
     const showForm = () => {
@@ -40,6 +41,22 @@ const HR: React.FC = () => {
                             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#60A5FA] via-[#C084FC] to-[#F472B6]">
                                 HR Dashboard
                             </h1>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={() => setShowAI(!showAI)}
+                                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                                <Bot className="w-5 h-5 mr-2" />
+                                AI Assistant
+                            </button>
+                            <div className="relative">
+                                <img
+                                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                                    alt="Profile"
+                                    className="w-8 h-8 rounded-full"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,7 +128,7 @@ const HR: React.FC = () => {
                         Create Job Post
                     </button>
                     <button
-                        onClick={()=>setShowPDFUploadModal(true)}
+                        onClick={() => setShowPDFUploadModal(true)}
                         className="flex items-center px-6 py-3 bg-[#1E293B] border border-gray-700 text-white rounded-xl hover:border-[#60A5FA]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#1E293B]"
                     >
                         <Upload className="w-5 h-5 mr-2" />
@@ -119,9 +136,11 @@ const HR: React.FC = () => {
                     </button>
                 </div>
                 {showPDFUploadModal && (
-                    <JobPdfForm handleClose={handleJobPdfUploadFormClose} userId = {user_id}/>
+                    <JobPdfForm handleClose={handleJobPdfUploadFormClose} userId={user_id} />
                 )}
-                <JobList userId={user_id}/>
+                <JobList userId={user_id.toString()} />
+                <div className="lg:col-span-1">{showAI && <AIAssistant />}</div>
+
                 {showCreateJobPost && (
                     <JobCreateForm userId={user_id} onClose={handleCloseJobPostModal} /> // Pass userId here
                 )}

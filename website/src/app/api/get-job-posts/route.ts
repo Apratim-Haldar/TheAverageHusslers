@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import db from "@/lib/db"; // your Prisma client instance
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,14 +12,14 @@ export async function POST(req: NextRequest) {
     const jobs = await db.jobPost.findMany({
       where: {
         status: "open",
-        userId: userId, // ✅ Filter by userId
+        userId: userId,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return NextResponse.json({ jobs });
+    return NextResponse.json({ jobs }, { status: 200 });
   } catch (error) {
     console.error("Error fetching jobs:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

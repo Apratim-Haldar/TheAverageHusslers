@@ -15,7 +15,11 @@ interface Job {
   location: string;
 }
 
-export default function JobList(userId:any) {
+type Props = {
+  userId: string;
+};
+
+export default function JobList( { userId }: Props) {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);

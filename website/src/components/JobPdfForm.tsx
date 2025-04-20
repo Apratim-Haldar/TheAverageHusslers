@@ -45,7 +45,7 @@ const JobPdfForm = ({ handleClose, userId }: Props) => {
       console.log('Company Name:', name); // Log the company name for debugging
       // const name = await companyName.json()
       const response = await fetch(
-        `https://e0ce-103-249-38-15.ngrok-free.app/upload?user_id=${userId}&companyName=${name}`, // Replace with your actual API endpoint
+        `https://85c3-103-249-38-15.ngrok-free.app/upload?user_id=${userId}&companyName=${name}`, // Replace with your actual API endpoint
         {
           method: 'POST',
           credentials: 'include',
